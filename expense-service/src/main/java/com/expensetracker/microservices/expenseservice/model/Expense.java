@@ -1,6 +1,12 @@
 package com.expensetracker.microservices.expenseservice.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import javax.persistence.*;
+import javax.validation.constraints.Future;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Past;
+import javax.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.util.Date;
 
@@ -12,12 +18,21 @@ public class Expense {
     @GeneratedValue(strategy= GenerationType.AUTO)
     private long expenseId;
 
-    @OneToOne(targetEntity = Category.class)
-    @JoinColumn(name= "categoryId")
-    private long categoryId;
+    @NotNull(message = "{expense.categoryId.notNull}")
+    @ManyToOne
+    @JoinColumn(name= "category_id")
+    private Category category;
 
+    @NotNull(message = "{expense.amount.notNull}")
     private BigDecimal amount;
+
+    @Future(message = "{expense.date.future}")
+    @Past(message = "{expense.date.past}")
+    @NotNull(message = "{expense.date.notnull}")
+    @JsonFormat(shape= JsonFormat.Shape.STRING, pattern="yyyy-MM-dd")
     private Date date;
+
+    @Size(min = 2,max=60,message = "{expense.remark.size}")
     private String remark;
 
     public long getExpenseId() {
@@ -28,12 +43,12 @@ public class Expense {
         this.expenseId = expenseId;
     }
 
-    public long getCategoryId() {
-        return categoryId;
+    public Category getCategory() {
+        return category;
     }
 
-    public void setCategoryId(long categoryId) {
-        this.categoryId = categoryId;
+    public void setCategory(Category category) {
+        this.category = category;
     }
 
     public BigDecimal getAmount() {

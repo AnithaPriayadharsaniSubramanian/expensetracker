@@ -1,13 +1,20 @@
 package com.expensetracker.microservices.expenseservice.controller;
 
+import com.expensetracker.microservices.expenseservice.model.Category;
 import com.expensetracker.microservices.expenseservice.model.Expense;
 import com.expensetracker.microservices.expenseservice.repository.CategoryRepository;
 import com.expensetracker.microservices.expenseservice.repository.ExpenseRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -23,15 +30,14 @@ public class ExpenseController {
     CategoryRepository categoryRepository;
 
     @GetMapping(value="/start/{startDate}/end/{endDate}")
-    public List<Expense> getAllExpensesBetweenDates(@PathVariable final Date startDate, @PathVariable final Date endDate)
-    {
+    public List<Expense> getAllExpensesBetweenDates(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) final Date startDate,
+                                                    @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) final Date endDate) {
         return expenseRepository.findByDateBetween(startDate,endDate);
     }
 
     @GetMapping(value="/date/{date}")
-    public List<Expense> getAllExpensesForDate(@PathVariable final Date date)
-    {
-        return expenseRepository.findByDate(date);
+    public List<Expense> getAllExpensesForDate(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) final Date date) {
+       return expenseRepository.findByDate(date);
     }
 
     @GetMapping(value="/month/{date}")
@@ -41,16 +47,24 @@ public class ExpenseController {
     }
 
     @PostMapping(value="/add")
-    public Expense addExpense(@RequestBody final Expense expense)
+    public ResponseEntity<Expense> addExpense(@Valid @RequestBody final Expense expense)
     {
-        return expenseRepository.save(expense);
+     Expense expenseObj = expenseRepository.save(expense);
+        return new ResponseEntity<>(expenseObj,HttpStatus.OK);
     }
 
-    @GetMapping(value = "/category")
+    /*@PostMapping(value="/add")
+    public Expense addExpense(@Valid @RequestBody final Expense expense)
+    {
+        Expense expenseObj = expenseRepository.save(expense);
+        return expenseObj;
+    }*/
+
+    @GetMapping(value = "/category/{categoryName}")
     public List<Expense> getAllExpensesForCategory(@PathVariable final String categoryName)
     {
-        long categoryId=categoryRepository.findByName(categoryName).getCategoryId();
-        return expenseRepository.findByCategoryId(categoryId);
+        Category category=categoryRepository.findByName(categoryName);
+        return expenseRepository.findByCategory(category);
 
     }
 }

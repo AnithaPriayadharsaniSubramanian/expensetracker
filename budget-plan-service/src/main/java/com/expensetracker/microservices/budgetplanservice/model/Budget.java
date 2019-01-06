@@ -16,15 +16,16 @@ public class Budget {
 
     private BigDecimal expense;
 
-    private Date monthForDate;
+    private String monthForDate;
 
     private BigDecimal savings;
 
     public Budget() {
     }
 
-    public Budget(BigDecimal budget, Date monthForDate, BigDecimal savings) {
+    public Budget(BigDecimal budget, BigDecimal expense,String monthForDate, BigDecimal savings) {
         this.budget = budget;
+        this.expense = expense;
         this.monthForDate = monthForDate;
         this.savings = savings;
     }
@@ -53,11 +54,11 @@ public class Budget {
         this.budget = budget;
     }
 
-    public Date getMonthForDate() {
+    public String getMonthForDate() {
         return monthForDate;
     }
 
-    public void setMonthForDate(Date monthForDate) {
+    public void setMonthForDate(String monthForDate) {
         this.monthForDate = monthForDate;
     }
 
