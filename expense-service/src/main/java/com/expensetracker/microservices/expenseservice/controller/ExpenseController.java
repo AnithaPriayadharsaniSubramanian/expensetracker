@@ -1,5 +1,6 @@
 package com.expensetracker.microservices.expenseservice.controller;
 
+import com.expensetracker.microservices.expenseservice.exception.ExpenseNotFoundException;
 import com.expensetracker.microservices.expenseservice.model.Category;
 import com.expensetracker.microservices.expenseservice.model.Expense;
 import com.expensetracker.microservices.expenseservice.repository.CategoryRepository;
@@ -17,6 +18,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/rest/expense")
@@ -30,14 +32,30 @@ public class ExpenseController {
     CategoryRepository categoryRepository;
 
     @GetMapping(value="/start/{startDate}/end/{endDate}")
-    public List<Expense> getAllExpensesBetweenDates(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) final Date startDate,
+    public ResponseEntity<List<Expense>> getAllExpensesBetweenDates(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) final Date startDate,
                                                     @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) final Date endDate) {
-        return expenseRepository.findByDateBetween(startDate,endDate);
+
+        List<Expense> expenseList = expenseRepository.findByDateBetween(startDate,endDate);
+        if(expenseList.isEmpty())
+        {
+            throw new ExpenseNotFoundException("No Expenses are spent between "+startDate+" - "+ endDate);
+        }
+        else {
+            return new ResponseEntity<>(expenseList, HttpStatus.OK);
+        }
     }
 
     @GetMapping(value="/date/{date}")
-    public List<Expense> getAllExpensesForDate(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) final Date date) {
-       return expenseRepository.findByDate(date);
+    public ResponseEntity<List<Expense>> getAllExpensesForDate(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) final Date date) {
+
+        List<Expense> expenseList = expenseRepository.findByDate(date);
+        if(expenseList.isEmpty())
+        {
+            throw new ExpenseNotFoundException("No Expenses available for :"+date);
+        }
+        else {
+            return new ResponseEntity<>(expenseList, HttpStatus.OK);
+        }
     }
 
     @GetMapping(value="/month/{date}")
@@ -61,10 +79,14 @@ public class ExpenseController {
     }*/
 
     @GetMapping(value = "/category/{categoryName}")
-    public List<Expense> getAllExpensesForCategory(@PathVariable final String categoryName)
-    {
-        Category category=categoryRepository.findByName(categoryName);
-        return expenseRepository.findByCategory(category);
-
+    public List<Expense> getAllExpensesForCategory(@PathVariable final String categoryName) {
+        Category category = categoryRepository.findByName(categoryName);
+        Optional<Category> categoryOptional = Optional.ofNullable(category);
+        if (!categoryOptional.isPresent()) {
+            throw new ExpenseNotFoundException("No Expenses available for category : "+categoryName);
+        } else {
+            return expenseRepository.findByCategory(category);
+        }
     }
+
 }

@@ -32,10 +32,11 @@ public class CategoryController {
 
 
     @GetMapping(value="/name/{name}")
-    public ResponseEntity<Optional<Category>> getCategory(@PathVariable final String name)
+    public ResponseEntity<Category> getCategory(@PathVariable final String name)
     {
-        Optional<Category> category = Optional.ofNullable(categoryRepository.findByName(name));
-        if (!category.isPresent())
+        Category category = categoryRepository.findByName(name);
+        Optional<Category> categoryOptional = Optional.ofNullable(category);
+        if (!categoryOptional.isPresent())
             throw new CategoryNotFoundException("Category "+name+" is not available");
 
         return  new ResponseEntity<>(category,HttpStatus.OK);

@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
-import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,20 +25,37 @@ public class CustomizedResponseEntityExceptionHandler {
 
         //extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler(Exception.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public final ResponseEntity<ErrorDetails> handleAllExceptions(Exception ex, WebRequest request) {
-        ErrorDetails errorDetails = new ErrorDetails(new Date(), ex.getMessage(),
-                request.getDescription(false));
-        return new ResponseEntity<>(errorDetails, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
-    @ExceptionHandler(CategoryNotFoundException.class)
+  @ExceptionHandler(CategoryNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public final ResponseEntity<ErrorDetails> handleCategoryNotFoundException(CategoryNotFoundException ex, WebRequest request) {
         ErrorDetails errorDetails = new ErrorDetails(new Date(), ex.getMessage(),
                 request.getDescription(false));
         return new ResponseEntity<>(errorDetails, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(ExpenseNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public final ResponseEntity<ErrorDetails> handleExpenseNotFoundException(ExpenseNotFoundException ex, WebRequest request) {
+        ErrorDetails errorDetails = new ErrorDetails(new Date(), ex.getMessage(),
+                request.getDescription(false));
+        return new ResponseEntity<>(errorDetails, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    protected ResponseEntity<Object> handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException ex, WebRequest request) {
+        ErrorDetails errorDetails = new ErrorDetails(new Date(), ex.getErrorCode() + " "+ ex.getRootCause(),
+                request.getDescription(false));
+        /*System.out.println(ex.getParameter()+"\n****"+ex.getLocalizedMessage()+
+                "\n******"+ex.getCause()+
+                "\n********"+ex.getErrorCode()+
+                "\n***********"+ex.getSuppressed()+
+                "\n**********"+ex.getName()+
+                "\n***********"+ex.getRequiredType()+
+                "\n***********"+ex.getRootCause()+
+                "\n***********"+ex.getPropertyName());
+*/
+        return new ResponseEntity<>(errorDetails,HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
@@ -50,17 +67,25 @@ public class CustomizedResponseEntityExceptionHandler {
         return new ResponseEntity<>(errorDetails,HttpStatus.BAD_REQUEST);
     }
 
-
-    //@Override
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    protected List<ObjectError> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
-            return /*ex.getBindingResult()
+    protected List<String> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
+            return ex.getBindingResult()
                 .getAllErrors().stream()
                 .map(ObjectError::getDefaultMessage)
-                .collect(Collectors.toList());*/
+                .collect(Collectors.toList());
 
-            ex.getBindingResult().getAllErrors();
+            //ex.getBindingResult().getAllErrors();
     }
+
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public final ResponseEntity<ErrorDetails> handleAllExceptions(Exception ex, WebRequest request) {
+        ErrorDetails errorDetails = new ErrorDetails(new Date(), ex.getMessage(),
+                request.getDescription(false));
+        return new ResponseEntity<>(errorDetails, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+
 
 }

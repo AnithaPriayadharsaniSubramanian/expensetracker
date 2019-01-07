@@ -16,17 +16,20 @@ public class Expense {
 
     @Id
     @GeneratedValue(strategy= GenerationType.AUTO)
+    @NotNull(message = "{expense.expenseId.notNull}")
     private long expenseId;
 
-    @NotNull(message = "{expense.categoryId.notNull}")
     @ManyToOne
     @JoinColumn(name= "category_id")
+    @NotNull(message = "{expense.categoryId.notNull}")
     private Category category;
 
     @NotNull(message = "{expense.amount.notNull}")
     private BigDecimal amount;
 
+/*
     @Future(message = "{expense.date.future}")
+*/
     @Past(message = "{expense.date.past}")
     @NotNull(message = "{expense.date.notnull}")
     @JsonFormat(shape= JsonFormat.Shape.STRING, pattern="yyyy-MM-dd")

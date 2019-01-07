@@ -1,11 +1,9 @@
 package com.expensetracker.microservices.expenseservice.model;
 
-import org.hibernate.validator.constraints.NotEmpty;
-
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import java.util.List;
+
 
 @Entity
 @Table(name = "category", catalog = "mysql_demo")
@@ -14,6 +12,7 @@ public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column (name = "category_id")
+    @NotNull(message = "{category.id.notNull}" )
     private long categoryId;
 
     @NotNull(message = "{category.name.notNull}")
